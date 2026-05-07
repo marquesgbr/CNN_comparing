@@ -7,7 +7,7 @@ import csv
 import json
 import random
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import torch
 from torch import nn
@@ -101,7 +101,7 @@ def run_epoch(
     model: nn.Module,
     loader: DataLoader,
     criterion: nn.Module,
-    optimizer: torch.optim.Optimizer,
+    optimizer: Optional[torch.optim.Optimizer],
     device: torch.device,
     train: bool,
 ) -> Tuple[float, float]:
@@ -112,6 +112,8 @@ def run_epoch(
         x, y = x.to(device), y.to(device)
 
         if train:
+            if optimizer is None:
+                raise ValueError("optimizer é obrigatório quando train=True.")
             optimizer.zero_grad()
 
         logits = model(x)
@@ -151,7 +153,7 @@ def train_and_evaluate(
     epoch_rows = []
     for epoch in range(1, config.epochs + 1):
         train_loss, train_acc = run_epoch(model, train_loader, criterion, optimizer, device, train=True)
-        val_loss, val_acc = run_epoch(model, val_loader, criterion, optimizer, device, train=False)
+        val_loss, val_acc = run_epoch(model, val_loader, criterion, None, device, train=False)
         epoch_rows.append(
             {
                 "dataset": dataset_name,
@@ -164,7 +166,7 @@ def train_and_evaluate(
             }
         )
 
-    test_loss, test_acc = run_epoch(model, test_loader, criterion, optimizer, device, train=False)
+    test_loss, test_acc = run_epoch(model, test_loader, criterion, None, device, train=False)
     summary = {
         "dataset": dataset_name,
         "model": model_name,
