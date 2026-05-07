@@ -113,7 +113,7 @@ def run_epoch(
 
         if train:
             if optimizer is None:
-                raise ValueError("optimizer é obrigatório quando train=True.")
+                raise ValueError("optimizer is required when train=True.")
             optimizer.zero_grad()
 
         logits = model(x)
@@ -208,9 +208,9 @@ def parse_args():
 def main():
     args = parse_args()
     if not 0 < args.val_split < 1:
-        raise ValueError("--val-split deve estar entre 0 e 1.")
+        raise ValueError("--val-split must be between 0 and 1.")
     if args.num_workers < 0:
-        raise ValueError("--num-workers deve ser >= 0.")
+        raise ValueError("--num-workers must be >= 0.")
     set_seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
