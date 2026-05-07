@@ -60,11 +60,18 @@ def load_dataset(name: str, transform, train: bool):
     return dataset_cls(root="data", train=train, download=True, transform=transform)
 
 
-def create_loaders(dataset_name: str, for_resnet: bool, batch_size: int, seed: int):
+def create_loaders(
+    dataset_name: str,
+    for_resnet: bool,
+    batch_size: int,
+    seed: int,
+    val_split: float,
+    num_workers: int,
+):
     train_dataset = load_dataset(dataset_name, build_transforms(dataset_name, for_resnet, train=True), train=True)
     test_dataset = load_dataset(dataset_name, build_transforms(dataset_name, for_resnet, train=False), train=False)
 
-    val_size = max(1, int(0.1 * len(train_dataset)))
+    val_size = max(1, int(val_split * len(train_dataset)))
     train_size = len(train_dataset) - val_size
     train_subset, val_subset = random_split(
         train_dataset,
@@ -73,9 +80,9 @@ def create_loaders(dataset_name: str, for_resnet: bool, batch_size: int, seed: i
     )
 
     return (
-        DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True),
-        DataLoader(val_subset, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True),
-        DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True),
+        DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True),
+        DataLoader(val_subset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True),
+        DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True),
     )
 
 
@@ -125,6 +132,8 @@ def train_and_evaluate(
         for_resnet=(model_name == "ResNet50"),
         batch_size=config.batch_size,
         seed=seed,
+        val_split=config.val_split,
+        num_workers=config.num_workers,
     )
 
     model = make_model(model_name, dataset_name, device, config.dropout_rate)
@@ -179,6 +188,8 @@ def parse_args():
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--dropout-rate", type=float, default=0.4)
+    parser.add_argument("--val-split", type=float, default=0.1)
+    parser.add_argument("--num-workers", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output-dir", type=Path, default=Path("results"))
     return parser.parse_args()
@@ -186,6 +197,10 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if not 0 < args.val_split < 1:
+        raise ValueError("--val-split deve estar entre 0 e 1.")
+    if args.num_workers < 0:
+        raise ValueError("--num-workers deve ser >= 0.")
     set_seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -195,6 +210,8 @@ def main():
         learning_rate=args.learning_rate,
         weight_decay=args.weight_decay,
         dropout_rate=args.dropout_rate,
+        val_split=args.val_split,
+        num_workers=args.num_workers,
     )
 
     summaries, all_epochs = [], []

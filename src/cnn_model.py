@@ -11,6 +11,8 @@ class OptimizationConfig:
     learning_rate: float = 1e-3
     weight_decay: float = 1e-4
     dropout_rate: float = 0.4
+    val_split: float = 0.1
+    num_workers: int = 2
 
 
 HYPERPARAMETER_GRID = {

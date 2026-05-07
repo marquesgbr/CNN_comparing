@@ -1,6 +1,6 @@
-torch
-torchvision
-matplotlib
-pandas
-seaborn
-notebook
+torch>=2.2,<3.0
+torchvision>=0.17,<1.0
+matplotlib>=3.8,<4.0
+pandas>=2.2,<3.0
+seaborn>=0.13,<1.0
+notebook>=7.2,<8.0
