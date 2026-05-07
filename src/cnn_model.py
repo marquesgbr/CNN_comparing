@@ -53,5 +53,6 @@ class CustomCNN(nn.Module):
         )
 
     def forward(self, x):
+        """Executa o forward pass e retorna logits (batch_size, num_classes)."""
         x = self.features(x)
         return self.classifier(x)

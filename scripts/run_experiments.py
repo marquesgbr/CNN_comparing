@@ -27,7 +27,7 @@ def set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
-def build_transforms(dataset_name: str, for_resnet: bool, train: bool):
+def build_transforms(dataset_name: str, for_resnet: bool, train: bool) -> transforms.Compose:
     if dataset_name == "MNIST":
         if for_resnet:
             normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -55,7 +55,7 @@ def build_transforms(dataset_name: str, for_resnet: bool, train: bool):
     return transforms.Compose(aug + [transforms.ToTensor(), normalize])
 
 
-def load_dataset(name: str, transform, train: bool):
+def load_dataset(name: str, transform: transforms.Compose, train: bool) -> datasets.VisionDataset:
     dataset_cls = datasets.MNIST if name == "MNIST" else datasets.CIFAR10
     return dataset_cls(root="data", train=train, download=True, transform=transform)
 
