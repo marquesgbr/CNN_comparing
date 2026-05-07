@@ -1,6 +1,7 @@
 """Arquitetura CNN customizada e constantes de otimização."""
 
 from dataclasses import dataclass
+import torch
 import torch.nn as nn
 
 
@@ -52,7 +53,7 @@ class CustomCNN(nn.Module):
             nn.Linear(256, num_classes),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Executa o forward pass e retorna logits (batch_size, num_classes)."""
         x = self.features(x)
         return self.classifier(x)

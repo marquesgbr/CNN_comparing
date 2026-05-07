@@ -28,6 +28,7 @@ def set_seed(seed: int) -> None:
 
 
 def build_transforms(dataset_name: str, for_resnet: bool, train: bool) -> transforms.Compose:
+    """Monta pipeline de transformações para dataset, modo treino e arquitetura."""
     if dataset_name == "MNIST":
         if for_resnet:
             normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -67,7 +68,7 @@ def create_loaders(
     seed: int,
     val_split: float,
     num_workers: int,
-):
+) -> Tuple[DataLoader, DataLoader, DataLoader]:
     train_dataset = load_dataset(dataset_name, build_transforms(dataset_name, for_resnet, train=True), train=True)
     test_dataset = load_dataset(dataset_name, build_transforms(dataset_name, for_resnet, train=False), train=False)
 
@@ -86,7 +87,7 @@ def create_loaders(
     )
 
 
-def make_model(model_name: str, dataset_name: str, device: torch.device, dropout_rate: float):
+def make_model(model_name: str, dataset_name: str, device: torch.device, dropout_rate: float) -> nn.Module:
     if model_name == "CustomCNN":
         in_channels = 1 if dataset_name == "MNIST" else 3
         model = CustomCNN(in_channels=in_channels, num_classes=10, dropout_rate=dropout_rate)
@@ -96,7 +97,14 @@ def make_model(model_name: str, dataset_name: str, device: torch.device, dropout
     return model.to(device)
 
 
-def run_epoch(model, loader, criterion, optimizer, device: torch.device, train: bool):
+def run_epoch(
+    model: nn.Module,
+    loader: DataLoader,
+    criterion: nn.Module,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device,
+    train: bool,
+) -> Tuple[float, float]:
     model.train(mode=train)
     total_loss, total_correct, total_samples = 0.0, 0, 0
 
